@@ -1,10 +1,10 @@
 let modInfo = {
-	name: "The ??? Table",
-	nameEN: "The ??? Table",// When you open the otherLanguageMod, this is the second language
-	id: "mymod2",
-	author: "nobody",
-	pointsName: "points",
-	modFiles: ["layers.js", "tree.js"],
+	name: "禁言增量页",
+	nameEN: "The Mute Table",// When you open the otherLanguageMod, this is the second language
+	id: "bannedspeakingtableeeeeeeeeeeeee",
+	author: "Liuliu66686与禁言增量频道的成员们",
+	pointsName: "禁言点",
+	modFiles: ["layers.js", "tree.js","functions.js"],
 
 	otherLanguageMod: false,// When on, it will ask the player to choose a language at the beginning of the game
 	languageMod: false,// Use when otherLanguageMod is off, default are true -> English, false -> Chinese
@@ -13,7 +13,7 @@ let modInfo = {
 	forceOneTab: false,// Enable Single-Tab Mode ( This feature doen't work fluently as you'd imagine, it's made for expert )
 	showTab: 'tree-node',// if you open forceOneTab, it will show this page everytime you refresh the page
 
-	initialStartPoints: new Decimal (10), // Used for hard resets and new players
+	initialStartPoints: new Decimal (0), // Used for hard resets and new players
 	offlineLimit: 1,  // In hours
 }
 
@@ -38,13 +38,13 @@ var colors = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0",
-	name: "Literally nothing",
+	num: "0.1",
+	name: "禁言石上时长现",
 }
 
 function changelog(){
 	return (options.ch || modInfo.languageMod==false)?`
-		<br><br><br><h1>更新日志:</h1><br>(不存在<span style='color: red'><s>剧透警告</s></span>)<br><br>
+		<br><br><br><h1>更新日志:</h1><br>(<span style='color: red'><s>懒得写</s></span>)<br><br>
 		<span style="font-size: 17px;">
 			<h3><s>不,你应该自己写这个</s></h3><br><br>
 			<h3>v3.0 - 史无前例的改动</h3><br>
@@ -74,7 +74,7 @@ function getStartPoints(){
 
 // Determines if it should show points/sec
 function canGenPoints(){
-	return true
+	return player.m.mutingT.gt(0)||hasUpgrade("s",21)
 }
 
 // Calculate points/sec!
@@ -83,11 +83,21 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
+	if(hasUpgrade("m",31)) gain = gain.mul(upgradeEffect("m",31))
+	if(hasUpgrade("m",41)) gain = gain.mul(upgradeEffect("m",41))
+	if(hasUpgrade("s",12)) gain = gain.mul(upgradeEffect("s",12))
+	if(hasUpgrade("s",25)) gain = gain.mul(upgradeEffect("s",25))
+	if(hasUpgrade("s",33)) gain = gain.mul(upgradeEffect("s",33))
+	if(hasUpgrade("s",35)) gain = gain.mul(upgradeEffect("s",35))
+	if(getBuyableAmount("s",11).gt(0)) gain = gain.mul(buyableEffect("s",11))
+	if(!player.m.mutingT.gt(0)&&hasUpgrade("s",21)) gain = gain.mul(upgradeEffect("s",21))
+	if(player.m.mutingT.gt(0)&&hasUpgrade("s",22)) gain = gain.mul(upgradeEffect("s",22))
 	return gain
 }
 
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
+
 }}
 
 // Display extra things at the top of the page
@@ -100,12 +110,14 @@ var displayThings = [
 
 // You can write stuff here to display them on top-left corner easily
 function displayThingsRes(){
-	return 'Points: '+format(player.points)+' | '
+	let text = '禁言点: '+format(player.points)+' | 信息: '+format(player.m.points,0)+ " | "
+	if(player.s.unlocked) text += "禁言石: " +format(player.s.points,0)+ " | "
+	return text
 }
 
 // Determines when the game "ends"
 function isEndgame() {
-	return false
+	return player.s.points.gte(1)
 }
 
 // 
