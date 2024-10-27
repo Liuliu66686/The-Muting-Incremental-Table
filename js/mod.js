@@ -38,13 +38,14 @@ var colors = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1",
-	name: "禁言石上时长现",
+	num: "0.1.2",
+	name: "禁言石上时长现,领域解锁挑战come;_ _ _ _ _ _ _,_ _ _ _ _ _ _.",
 }
 
 function changelog(){
 	return (options.ch || modInfo.languageMod==false)?`
-		<br><br><br><h1>更新日志:</h1><br>(<span style='color: red'><s>懒得写</s></span>)<br><br>
+		<br><br><br><h1>更新日志:</h1><br>(<span style='color: red'><s>懒得写</s></span>)<br>v0.1.2:`+VERSION.name+`<br>
+		
 		<span style="font-size: 17px;">
 			<h3><s>不,你应该自己写这个</s></h3><br><br>
 			<h3>v3.0 - 史无前例的改动</h3><br>
@@ -83,6 +84,7 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
+	let gainpower = one
 	if(hasUpgrade("m",31)) gain = gain.mul(upgradeEffect("m",31))
 	if(hasUpgrade("m",41)) gain = gain.mul(upgradeEffect("m",41))
 	if(hasUpgrade("s",12)) gain = gain.mul(upgradeEffect("s",12))
@@ -92,6 +94,10 @@ function getPointGen() {
 	if(getBuyableAmount("s",11).gt(0)) gain = gain.mul(buyableEffect("s",11))
 	if(!player.m.mutingT.gt(0)&&hasUpgrade("s",21)) gain = gain.mul(upgradeEffect("s",21))
 	if(player.m.mutingT.gt(0)&&hasUpgrade("s",22)) gain = gain.mul(upgradeEffect("s",22))
+	
+	if(inChallenge("s",11)) gainpower = gainpower.mul(0.25)
+
+	gain = gain.pow(gainpower)
 	return gain
 }
 
@@ -117,7 +123,7 @@ function displayThingsRes(){
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.s.points.gte(1)
+	return hasChallenge("s",11)
 }
 
 // 

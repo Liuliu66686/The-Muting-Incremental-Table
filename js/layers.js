@@ -53,6 +53,7 @@ addLayer("m", {
         mutingT: zero,
         angryTimes: zero,
         autoBuyU: true,
+        autoSend: true,
     }},
     color: "#FFFFFF",
     type: "none",
@@ -65,14 +66,15 @@ addLayer("m", {
         if(hasUpgrade("m",12)) mult = mult.mul(upgradeEffect("m",12))
         if(hasUpgrade("m",32)) mult = mult.mul(upgradeEffect("m",32))
         if(hasUpgrade("m",34)) mult = mult.mul(upgradeEffect("m",34))
-        if(hasUpgrade("m",35)) mult = mult.mul(upgradeEffect("m",35))   
+        if(hasUpgrade("m",35)) mult = mult.mul(upgradeEffect("m",35))  
         mult = mult.mul(this.gainMultR())
         return mult
     },
     gainMultR(){
         mult = one
         if(hasUpgrade("s",11)) mult = mult.mul(upgradeEffect("s",11)) 
-        if(hasUpgrade("s",31)) mult = mult.mul(upgradeEffect("s",31))     
+        if(hasUpgrade("s",31)) mult = mult.mul(upgradeEffect("s",31))             
+        if(inChallenge("s",11)) mult = mult.div(25000)    
         return mult
     },
     hotkeys: [
@@ -263,12 +265,12 @@ addLayer("m", {
         },
         35: {
             title: "禁言后的无奈",
-            description: "基于被禁言次数降低管理的怒气和信息获取",
+            description: "基于被禁言次数降低管理的怒气和倍增信息获取",
             effect(){
                 let eff = player.m.angryTimes.root(2).max(1)
                 return eff
             },
-            effectDisplay(){return "/.x"+format(this.effect())},
+            effectDisplay(){return "/"+format(this.effect())+",x"+format(this.effect())},
             cost: new Decimal(15000),
             unlocked(){return hasUpgrade("m",25)||player.s.unlocked},
             style() { return {'border-radius': "0px"}},
@@ -341,6 +343,21 @@ addLayer("m", {
             style() { return { 'background-color': "#FFFFFF", filter: "brightness(100%)",'border-radius': "0px",height: "120px", width: "200px"}},
             unlocked(){return hasUpgrade("s",43)},
         },
+        22:{
+            title() {
+                let a = player.m.autoSend&&hasUpgrade("s",53)?"开":"关"
+                return "开关自动'发一次消息'<br>当前:"+ a},
+            canClick(){return hasUpgrade("s",53)},
+            onClick() {          
+                player.m.autoSend=!player.m.autoSend
+            },
+            run(){
+                if(!hasUpgrade("s",53)||!player.m.autoSend) return
+                clickClickable("m",11)
+            },
+            style() { return { 'background-color': "#FFFFFF", filter: "brightness(100%)",'border-radius': "0px",height: "120px", width: "200px"}},
+            unlocked(){return hasUpgrade("s",53)},
+        },
     },
     bars:{
         sendL:{
@@ -398,7 +415,8 @@ addLayer("m", {
         if(hasUpgrade("m",25)) mult = mult.mul(upgradeEffect("m",25))
         if(hasUpgrade("m",13)) mult = mult.div(upgradeEffect("m",13))     
         if(hasUpgrade("m",33)) mult = mult.div(upgradeEffect("m",33))     
-        if(hasUpgrade("m",35)) mult = mult.div(upgradeEffect("m",35))   
+        if(hasUpgrade("m",35)) mult = mult.div(upgradeEffect("m",35))
+        if(inChallenge("m",11)) mult = mult.div(100)   
         mult = mult.div(this.gainMultR())
         if(player.m.mutingT.gt(0)&&hasUpgrade("s",15)) mult = mult.pow(0.5)
         return mult
@@ -425,7 +443,7 @@ addLayer("m", {
         if(player.m.muteP.gte(layers.m.angryMax())){
             player.m.muteP = zero;player.m.mutingT = player.m.mutingT.add(layers.m.muteTmaX()).min(layers.m.muteTmaX());player.m.angryTimes = player.m.angryTimes.add(this.getMutingTimes())
         }
-        if(hasUpgrade("s",24)) player.m.points = player.m.points.add(this.gainMult().mul(upgradeEffect("s",24)).mul(diff))
+        if(hasUpgrade("s",34)) player.m.points = player.m.points.add(this.gainMult().mul(upgradeEffect("s",34)).mul(diff))
         if(hasUpgrade("s",41)) player.m.angryTimes = player.m.angryTimes.add(upgradeEffect("s",41).mul(diff))
         if(hasUpgrade("s",43)&&player.m.autoBuyU) quickUpgBuy("m", quickSpawnConst(4,5))
     },
@@ -453,7 +471,7 @@ addLayer("m", {
                     "border-color": "#444444","background-color": "#0f0f0f"
                 },
                 content:[
-                    "blank",["clickable",21]
+                    "blank",["clickable",21],["clickable",22]
                 ],
                 unlocked(){return hasUpgrade("s",43)/*||player.s.unlocked*/},
             },
@@ -567,6 +585,7 @@ addLayer("s", {
             effect(){
                 let eff = one.div(10)
                 if(hasUpgrade("s",24)) eff = eff.mul(upgradeEffect("s",24))
+                if(inChallenge("s",11)) eff = zero
                 return eff
             },
             effectDisplay(){return "+"+format(this.effect().mul(100),0)+"%/s"},
@@ -664,6 +683,7 @@ addLayer("s", {
             description: "每秒自动获取300%点击获取的信息",
             effect(){
                 let eff = three
+                if(inChallenge("s",11)) eff = zero
                 return eff
             },
             effectDisplay(){return "+"+format(this.effect().mul(100),0)+"%/s"},
@@ -679,7 +699,7 @@ addLayer("s", {
                 return eff
             },
             effectDisplay(){return "x"+format(this.effect())},
-            cost: new Decimal(1000),
+            cost: new Decimal(500),
             unlocked(){return player.s.unlocked},
             style() { return {'border-radius': "0px",}},
         },
@@ -689,10 +709,11 @@ addLayer("s", {
             effect(){
                 let eff = n(50)
                 if(hasUpgrade("s",51)) eff = eff.mul(upgradeEffect("s",32))
+                if(inChallenge("s",11)) eff = zero
                 return eff
             },
             effectDisplay(){return "+"+format(this.effect(),0)+"/s"},
-            cost: new Decimal(3000),
+            cost: new Decimal(750),
             unlocked(){return player.s.unlocked},
             style() { return {'border-radius': "0px",}},
         },
@@ -701,21 +722,18 @@ addLayer("s", {
             description: "升级'超强化禁言'的指数基于信息而增加(初始为2)",
             effect(){
                 let eff = player.m.points.max(10).log(10).root(5).sub(1)
+                eff = powsoftcap(eff,n(10),two)
+                if(hasUpgrade("s",52)) eff = eff.add(upgradeEffect("s",52))
                 return eff
             },
             effectDisplay(){return "+"+format(this.effect())},
-            cost: new Decimal(3000),
+            cost: new Decimal(2000),
             unlocked(){return player.s.unlocked},
             style() { return {'border-radius': "0px",}},
         },
         43: {
             title: "领域升级13",
             description: "自动购买禁言升级(在禁言页面里开关)",
-            effect(){
-                let eff = player.m.points.max(10).log(10).root(5).sub(1)
-                return eff
-            },
-            effectDisplay(){return "+"+format(this.effect())},
             cost: new Decimal(3000),
             unlocked(){return player.s.unlocked},
             style() { return {'border-radius': "0px",}},
@@ -723,10 +741,72 @@ addLayer("s", {
         51: {
             title: "领域升级21",
             description: "升级'领域升级11'同样受到升级'禁言激发'的效果",
+            cost: new Decimal(10000),
+            unlocked(){return player.s.unlocked},
+            style() { return {'border-radius': "0px",}},
+        },
+        52: {
+            title: "领域升级22",
+            description: "升级'领域升级12'的效果基于禁言石再次增加",
+            effect(){
+                let eff = player.s.points.max(10).log(10).root(5).sub(1)
+                eff = powsoftcap(eff,n(15),two)
+                return eff
+            },
+            effectDisplay(){return "+"+format(this.effect())},
             cost: new Decimal(20000),
             unlocked(){return player.s.unlocked},
             style() { return {'border-radius': "0px",}},
         },
+        53: {
+            title: "领域升级23",
+            description: "自动'发一次消息'(在禁言页面里开关)",
+            cost: new Decimal(30000),
+            unlocked(){return player.s.unlocked},
+            style() { return {'border-radius': "0px",}},
+        },
+        61: {
+            title: "领域升级31",
+            description: "无效果",
+            cost: new Decimal(1e309),
+            unlocked(){return hasChallenge("s",11)},
+            style() { return {'border-radius': "0px",}},
+        },
+        62: {
+            title: "领域升级32",
+            description: "无效果",
+            cost: new Decimal(1e309),
+            unlocked(){return hasChallenge("s",11)},
+            style() { return {'border-radius': "0px",}},
+        },
+        63: {
+            title: "领域升级33",
+            description: "无效果",
+            cost: new Decimal(1e309),
+            unlocked(){return hasChallenge("s",11)},
+            style() { return {'border-radius': "0px",}},
+        },
+        71: {
+            title: "领域升级41",
+            description: "无效果",
+            cost: new Decimal(1e309),
+            unlocked(){return hasChallenge("s",11)},
+            style() { return {'border-radius': "0px",}},
+        },
+        72: {
+            title: "领域升级42",
+            description: "无效果",
+            cost: new Decimal(1e309),
+            unlocked(){return hasChallenge("s",11)},
+            style() { return {'border-radius': "0px",}},
+        },
+        73: {
+            title: "领域升级43",
+            description: "无效果",
+            cost: new Decimal(1e309),
+            unlocked(){return hasChallenge("s",11)},
+            style() { return {'border-radius': "0px",}},
+        },      
     },
     buyables:{
         11:{
@@ -751,6 +831,62 @@ addLayer("s", {
                 let a = "购买量: <h2 style='color:#444444;text-shadow:0px 0px 10px;'>"+ format(getBuyableAmount(this.layer,this.id),0) + "</h2>"
                 return a},
         },
+        12:{
+            title: "一个奇怪的'不可购买'",
+            cost(x) {
+                let a = ten.pow(x.add(3))
+                return a
+            },
+            display() { return ""},
+            canAfford() { return },
+            buy() {
+                player.s.points = player.s.points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            effect(x){
+                let eff = four.pow(x)
+                return eff
+            },
+            unlocked(){return hasChallenge("s",11)},
+            style() { return { 'background-color': this.canAfford()?"#444444":"#BF8F8F", filter: "brightness(100%)",'border-radius': "0px",height: "120px", width: "240px"}},
+            tooltip(){
+                let a = "不可购买量: <h2 style='color:#444444;text-shadow:0px 0px 10px;'>"+ format(getBuyableAmount(this.layer,this.id),0) + "</h2>"
+                return a},
+        },
+    },
+    challenges:{
+        11: {
+            name: "禁言石领域I",
+            challengeDescription: "<h5>进入禁言石的第一领域,效果:<h6>仅对信息/25000,禁言点^0.25,管理怒火/100,升级'外部禁言','自助信息','领域升级11'失效",
+            canComplete() {return player.points.gte(1e4)},
+            goalDescription: "10000禁言点",
+            rewardDescription(){return "解锁第二层禁言石领域"},
+            onEnter() {
+                player.m.points =  zero
+            },
+            style() { 
+                let color = "#BF8F8F"
+                if(hasChallenge(this.layer,this.id)) color = "#77bf5f"
+                if(this.canComplete()&&inChallenge("s",11)) color = "#ffbf00"              
+                return { 'background-color': color, filter: "brightness(100%)",'border-radius': "0px",height: "232px", width: "232px"}},
+            unlocked(){return true},
+        },
+        12: {
+            name: "禁言石领域II",
+            challengeDescription: "<h5>进入禁言石的第二领域,效果:<h6>",
+            canComplete() {return },
+            goalDescription: "1e10000禁言点",
+            rewardDescription(){return "解锁第三层禁言石领域"},
+            onEnter() {
+                player.m.points = zero
+            },
+            style() { 
+                let color = "#BF8F8F"
+                if(hasChallenge(this.layer,this.id)) color = "#77bf5f"
+                if(this.canComplete()&&inChallenge("s",11)) color = "#ffbf00"              
+                return { 'background-color': color, filter: "brightness(100%)",'border-radius': "0px",height: "232px", width: "232px"}},
+            unlocked(){return hasChallenge("s",11)},
+        },
     },
     clickables:{
         11:{
@@ -761,6 +897,15 @@ addLayer("s", {
             },
             style() { return { 'background-color': this.canClick()?"#88FFFF":"#bf8f8f", filter: "brightness(100%)",'border-radius': "0px",height: "120px", width: "120px"}},
             unlocked(){return hasUpgrade("s",13)},
+        },
+        21:{
+            title() {return "一个奇怪的'不可点击'"},
+            canClick(){return },
+            onClick() {          
+                
+            },
+            style() { return { 'background-color': this.canClick()?"#88FFFF":"#bf8f8f", filter: "brightness(100%)",'border-radius': "0px",height: "120px", width: "240px"}},
+            unlocked(){return hasChallenge("s",11)},
         },
     },
     microtabs:{
@@ -778,8 +923,11 @@ addLayer("s", {
                     "border-color": "#444444","background-color": "#0f0f0f"
                 },
                 content:[
-                    "blank","blank",["row",[["buyable",11],["column",[["row",[["upgrade",41],["upgrade",42],["upgrade",43]]],["row",[["upgrade",51],["upgrade",52],["upgrade",53]]]]]]]
+                    "blank","blank",
+                    ["row",[["buyable",11],["column",[["row",[["upgrade",41],["upgrade",42],["upgrade",43]]],["row",[["upgrade",51],["upgrade",52],["upgrade",53]]]]],["challenge",11]]],
+                    ["row",[["column",[["buyable",12],["clickable",21]]],["column",[["row",[["upgrade",61],["upgrade",62],["upgrade",63]]],["row",[["upgrade",71],["upgrade",72],["upgrade",73]]]]],["challenge",12]]]
                 ],
+                unlocked(){return hasUpgrade("s",35)}
             },
         },
     },
