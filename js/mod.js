@@ -126,7 +126,7 @@ function displayThingsRes(){
 
 // Determines when the game "ends"
 function isEndgame() {
-	return hasChallenge("s",11)
+	return player.b.points.gte(1)
 }
 
 // 
