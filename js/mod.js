@@ -38,13 +38,13 @@ var colors = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1.3",
-	name: "禁言石上时长现,领域解锁挑战come;莫问领域结何时,凝聚还有点石殇",
+	num: "0.1.4",
+	name: "禁言砖,以禁言服人.",
 }
 
 function changelog(){
 	return (options.ch || modInfo.languageMod==false)?`
-		<br><br><br><h1>更新日志:</h1><br>(<span style='color: red'><s>懒得写</s></span>)<br>v0.1.3:`+VERSION.name+`<br>
+		<br><br><br><h1>更新日志:</h1><br>(<span style='color: red'><s>懒得写</s></span>)<br>v0.1.4:`+VERSION.name+`<br>
 		
 		<span style="font-size: 17px;">
 			<h3><s>不,你应该自己写这个</s></h3><br><br>
@@ -93,6 +93,8 @@ function getPointGen() {
 	if(hasUpgrade("s",35)) gain = gain.mul(upgradeEffect("s",35))
 	if(hasUpgrade("s",62)) gain = gain.mul(upgradeEffect("s",62))
 	if(hasUpgrade("s",72)) gain = gain.mul(upgradeEffect("s",72))
+	if(hasUpgrade("b",12)) gain = gain.mul(upgradeEffect("b",12))
+	if(hasUpgrade("b",15)) gain = gain.mul(upgradeEffect("b",15))
 	if(getBuyableAmount("s",11).gt(0)) gain = gain.mul(buyableEffect("s",11))
 	if(!player.m.mutingT.gt(0)&&hasUpgrade("s",21)) gain = gain.mul(upgradeEffect("s",21))
 	if(player.m.mutingT.gt(0)&&hasUpgrade("s",22)) gain = gain.mul(upgradeEffect("s",22))
@@ -121,12 +123,13 @@ var displayThings = [
 function displayThingsRes(){
 	let text = '禁言点: '+format(player.points)+' | 信息: '+format(player.m.points,0)+ " | "
 	if(player.s.unlocked) text += "禁言石: " +format(player.s.points,0)+ " | "
+	if(player.b.unlocked) text += "禁言砖: " +format(player.b.points,1)+ " | "
 	return text
 }
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.b.points.gte(1)
+	return hasUpgrade("b",25)&&hasChallenge("s",13)
 }
 
 // 
