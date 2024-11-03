@@ -533,14 +533,15 @@ addLayer("s", {
     },
     row: 2,
     doReset(resettingLayer){
+        player.s.bestTime=player.s.bestTime.min(player.s.resetTime)
         if (layers[resettingLayer].row > layers[this.layer].row) {
             let kept = []
             if(resettingLayer=="b"){
                 if(hasChallenge("s",13)) kept.push("challenges")
             }
             layerDataReset(this.layer, kept)
-        }
-        player.s.bestTime=player.s.bestTime.min(player.s.resetTime)
+            player.s.bestTime=n(86400)
+        }       
         if(player.s.reRB) {quickUpgBuyorSell("s",[61,62,63,71,72,73]);player.s.rPoints=layers.s.rPointMax();player.s.reRB=false}
     },
     hotkeys: [
@@ -1169,7 +1170,7 @@ addLayer("b", {
     startData() { return {
         unlocked: false,
 		points: zero,
-        bestTime: n(1e309)
+        bestTime: new Decimal(1e308)
     }},
     color: "#ce723c",
     requires: new Decimal(5e26),
@@ -1190,12 +1191,11 @@ addLayer("b", {
     },
     row: 3,
     doReset(resettingLayer){
+        player.b.bestTime=player.b.bestTime.min(player.b.resetTime)
         if (layers[resettingLayer].row > layers[this.layer].row) {
             let kept = []
             layerDataReset(this.layer, kept)
         }
-        player.b.bestTime=player.b.bestTime.min(player.b.resetTime)
-        player.s.bestTime=n(86400)
     },
     hotkeys: [
         {key: "b", description: "B: 进行凝聚重置(禁言砖)", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
@@ -1341,7 +1341,7 @@ addLayer("b", {
     tabFormat: [ 
         ["display-text", function() { return getPointsDisplay() }],
         ["row",[["column",["main-display","prestige-button"]],"blank",                             
-        ["display-text",function(){return "你有 "+format(player.s.points)+" 禁言石<br>你最多同时拥有 "+format(player.b.best,0)+" 禁言砖<br>你共有 "+format(player.b.total,0)+" 禁言砖<br>你在新的凝聚中花费了 "+formatTime(player.b.resetTime)}]]],
+        ["display-text",function(){return "你有 "+format(player.s.points)+" 禁言石<br>你最多同时拥有 "+format(player.b.best,0)+" 禁言砖<br>你共有 "+format(player.b.total,0)+" 禁言砖<br>你在新的凝聚中花费了 "+formatTime(player.b.resetTime)+"<br>最佳凝聚时间为 "+formatTime(player.b.bestTime)+""}]]],
         ["microtabs","bricks"] 
     ], 
 })
